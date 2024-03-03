@@ -1,6 +1,7 @@
 import express from "express";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
+import { prismaClient } from "./lib/db";
 
 async function init() {
   const app = express();
@@ -16,15 +17,45 @@ async function init() {
         hello: String
         say(name: String): String
     }
-    `, 
+    type Mutation {
+        createUser(firstName: String!, lastName: String!, email: String!, password: String!): Boolean
+    }
+    `,
     // Actual functions which runs
     resolvers: {
-        Query: {
-            hello: () => `Hey there, I am from Graphql server`,
-            say: (_, {name}: {name: string}) => `Hey ${name}, How are you?`,
+      Query: {
+        hello: () => `Hey there, I am from Graphql server`,
+        say: (_, { name }: { name: string }) => `Hey ${name}, How are you?`,
+      },
+      Mutation: {
+        createUser: async (
+          _,
+          {
+            firstName,
+            lastName,
+            email,
+            password,
+          }: {
+            firstName: string;
+            lastName: string;
+            email: string;
+            password: string;
+          }
+        ) => {
+          await prismaClient.user.create({
+            data: {
+              email,
+              firstName,
+              lastName,
+              password,
+              profileImageURL: "",
+              salt: "random_salt",
+            },
+          });
+          return true;
         },
-
-    }, 
+      },
+    },
   });
 
   // Start the  gql Server
@@ -34,7 +65,7 @@ async function init() {
     res.json({ mag: "Welcome to GraphQL" });
   });
 
-  app.use("/graphql", expressMiddleware(gqlserver))
+  app.use("/graphql", expressMiddleware(gqlserver));
 
   app.listen(PORT, () => console.log(`Server started at PORT: ${PORT}`));
 }
