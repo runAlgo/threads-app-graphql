@@ -6,7 +6,7 @@ const gqlserver = new ApolloServer({
     // Schema layer
     typeDefs: `
     type Query {
-       hello: String
+       ${User.queries}
     }
     type Mutation {
         ${User.mutations}

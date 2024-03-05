@@ -1,3 +1,3 @@
-export const typeDefs = `#graphql
+export const typeDefs = `
 
 `;
